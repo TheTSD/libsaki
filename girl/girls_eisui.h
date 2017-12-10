@@ -15,7 +15,7 @@ class Hatsumi : public Girl
 public:
     GIRL_CTORS(Hatsumi)
 
-    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
+    bool checkInit(const Table &table, Who who, const Hand &init, const Princess &princess, int iter) ;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
                    std::bitset<NUM_NM_SKILL> &presence,

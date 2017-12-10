@@ -10,17 +10,39 @@ namespace saki
 
 
 
-bool Hatsumi::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Hatsumi::checkInit(const Table &table, const Who who, const Hand &init, const Princess &princess, int iter)
 {
     if (who == mSelf || iter > 100)
         return true;
 
-    if (princess.getTable().getSelfWind(mSelf) == 4) { // north seat
-        // prevent rivals having E/N pairs
+    if (princess.getTable().getSelfWind(mSelf) == 1) { // 东起，不给他家东
         using namespace tiles34;
         int ctE = init.closed().ct(1_f);
+        int dont4 = table.getHand(mSelf).closed().ct(1_f);
+        return ctE <= 0 && dont4 == 3;
+    }
+    if (princess.getTable().getSelfWind(mSelf) == 2) { // 南起，不给他家南
+        using namespace tiles34;
+        int ctS = init.closed().ct(2_f);
+        int dont4 = table.getHand(mSelf).closed().ct(2_f);
+        return ctS <= 0 && dont4 == 3;
+    }
+    if (princess.getTable().getSelfWind(mSelf) == 3) { // 西起，不给他家西
+        using namespace tiles34;
+        int ctW = init.closed().ct(3_f);
+        int dont4 = table.getHand(mSelf).closed().ct(3_f);
+        return ctW <= 0 && dont4 == 3;
+    }
+    if (princess.getTable().getSelfWind(mSelf) == 4) { // 北起，不给他家北
+        using namespace tiles34;
         int ctN = init.closed().ct(4_f);
-        return ctE <= 1 && ctN <= 1;
+        int dont4 = table.getHand(mSelf).closed().ct(4_f);
+        return ctN <= 0 && dont4 == 3;
+    }
+    if (table.getRound() >= 4) { // 南风圈不给他家起手南对子
+        using namespace tiles34;
+        int ctN = init.closed().ct(2_f);
+        return ctN <= 1;
     }
 
     return true;
@@ -28,47 +50,43 @@ bool Hatsumi::checkInit(Who who, const Hand &init, const Princess &princess, int
 
 void Hatsumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
-    if (rinshan || table.getSelfWind(mSelf) != 4)
+    if (rinshan)
         return;
 
-    if (who != mSelf) {
+    if (who != mSelf && table.getRound() >= 4){
         const Hand &hand = table.getHand(who);
-        for (int v = 1; v <= 4; v++) {
-            T34 t(Suit::F, v);
-            // prevent rivals from having F-pairs
-            // let them to have floating useless F
-            mount.lightA(t, hand.ct(t) >= 1 ? -50 : (table.riichiEstablished(who) ? 500 : 80));
-        }
-        return;
+             T34 t(Suit::F, 2);
+            mount.lightA(t, -40);
+                                // 南场他家难摸场风
     }
+    if (who == mSelf && table.getRound() >= 4){
+        T34 t(Suit::F, 2);
+        const TileCount &closed = table.getHand(mSelf).closed();
+        if (closed.ct(t) <= 3)
+            mount.lightA(t, 325);
 
-    const auto &barks = table.getHand(mSelf).barks();
-    const TileCount &closed = table.getHand(mSelf).closed();
-    if (barks.size() < 2)
-        return;
 
-    using namespace tiles34;
-    auto checkE = [](const M37 &m) { return m[0] == 1_f; };
-    auto checkN = [](const M37 &m) { return m[0] == 4_f; };
-    auto isSW = [](T34 t) { return t == 2_f || t == 3_f; };
+       // 南场自己易摸场风,3张为止，无法彻底杜绝摸4张的可能性（极低概率）
+     }
 
-    bool hasE = util::any(barks, checkE);
-    bool hasN = util::any(barks, checkN);
-    int ctE = closed.ct(1_f);
-    int ctS = closed.ct(2_f);
-    int ctW = closed.ct(3_f);
-    int ctN = closed.ct(4_f);
 
-    if (hasE && hasN && (std::min(ctS, 3) + std::min(ctW, 3) < 5)) {
+        if (who == mSelf){
+            const Hand &hand = table.getHand(who);
+                 T34 off(Suit::F, table.getSelfWind(mSelf));
+                mount.lightA(off, -5000);
+                for (T34 t : tiles34::Z7)
+                mount.lightA(t, -20);
+        }
+        // 靠自摸无法摸到第四张自风，常驻的字牌率低下
+
+
+        const TileCount &closed = table.getHand(mSelf).closed();
+
         for (T34 t : tiles34::ALL34) {
-            mount.lightA(t, -50);
-            mount.lightB(t, isSW(t) ? 1000 : -50);
-        }
-    } else if (ctE == 3) { // drag E-ankan
-        mount.lightA(1_f, 500);
-    } else if (ctN == 3) { // drag N-ankan
-        mount.lightA(4_f, 500);
-    }
+            int ct = closed.ct(t);
+            const std::array<int, 5> deltas { 30, 30, 30, 30, 30 };
+            mount.lightA(t, deltas[ct]);
+        }// 稳定的不明显直向
 }
 
 void Hatsumi::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
@@ -78,28 +96,43 @@ void Hatsumi::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
     (void) rand;
     (void) presence;
 
-    if (princess.getTable().getSelfWind(mSelf) == 4) { // north seat
+    if (princess.getTable().getSelfWind(mSelf) == 1) { // 东家
         using namespace tiles37;
-        // seize E/N pair
-        if (mount.remainA(1_f) >= 2) {
+        // 起手3东
+        if (mount.remainA(1_f) >= 3) {
+            init.inc(mount.initPopExact(1_f), 1);
             init.inc(mount.initPopExact(1_f), 1);
             init.inc(mount.initPopExact(1_f), 1);
         }
-        if (mount.remainA(4_f) >= 2) {
-            init.inc(mount.initPopExact(4_f), 1);
-            init.inc(mount.initPopExact(4_f), 1);
         }
-
-        // reserve a triplet of S/W
-        mount.loadB(2_f, 3);
-        mount.loadB(3_f, 3);
-
-        // prevent E/N to be dora
-        mount.power(Mount::Exit::DORA, 0, 1_f, -1000, false);
-        mount.power(Mount::Exit::DORA, 0, 4_f, -1000, false);
+     if (princess.getTable().getSelfWind(mSelf) == 2) { // 南家
+        using namespace tiles37;
+        // 起手3南
+         if (mount.remainA(2_f) >= 3) {
+             init.inc(mount.initPopExact(2_f), 1);
+             init.inc(mount.initPopExact(2_f), 1);
+             init.inc(mount.initPopExact(2_f), 1);
+        }
+        }
+     if (princess.getTable().getSelfWind(mSelf) == 3) { // 西家
+        using namespace tiles37;
+        // 起手3西
+         if (mount.remainA(3_f) >= 3) {
+             init.inc(mount.initPopExact(3_f), 1);
+             init.inc(mount.initPopExact(3_f), 1);
+             init.inc(mount.initPopExact(3_f), 1);
+        }
+        }
+     if (princess.getTable().getSelfWind(mSelf) == 4) { // 北家
+        using namespace tiles37;
+        // 起手3北
+         if (mount.remainA(4_f) >= 3) {
+             init.inc(mount.initPopExact(4_f), 1);
+             init.inc(mount.initPopExact(4_f), 1);
+             init.inc(mount.initPopExact(4_f), 1);
+         }
+        }
     }
-}
-
 
 
 
