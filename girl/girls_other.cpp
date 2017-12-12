@@ -1,6 +1,7 @@
 #include "girls_other.h"
 #include "../table/table.h"
 #include "../util/misc.h"
+#include "../unit/tile.h"
 
 
 
@@ -11,16 +12,44 @@ namespace saki
 
 void Kazue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
-    if (who != mSelf || rinshan)
+
+    (void) table;
+    const Hand &hand = table.getHand(mSelf);
+    const TileCount &closed = hand.closed();
+    const auto &barks = hand.barks();
+
+
+    if (rinshan)
         return;
 
-    if (table.getRound() >= 4)
-        accelerate(mount, table.getHand(mSelf), table.getRiver(mSelf), 80);
+    if (who != mSelf & table.getRound() >= 4){
+        accelerate(mount, table.getHand(who), table.getRiver(who), -12);
+    }
+
+    if (who == mSelf & table.getRound() >= 4)
+        accelerate(mount, table.getHand(who), table.getRiver(who), 80);
+
     else
-        accelerate(mount, table.getHand(mSelf), table.getRiver(mSelf), -10);
+        accelerate(mount, table.getHand(who), table.getRiver(who), -10);
+
+    if (who == mSelf & table.getRound() >= 4 & table.riichiEstablished(mSelf)){
+        accelerate(mount, table.getHand(who), table.getRiver(who), 600);
+    }
+
+    if (table.riichiEstablished(mSelf) && table.getRound() >= 0){
+        for (int pos = 0; pos < 5; pos++) {
+            const TileCount &closed = hand.closed();
+                  for (T34 t : tiles34::ALL34) {
+                      if (closed.ct(t) == 2){
+                      T34 i = t.indicator();
+                  int mk = t.suit() == i.suit() ? 5000 : -50;
+                mount.power(Mount::URADORA, pos, i, mk, false);
+            }
+          }
+        }
 }
 
-
+}
 
 void Uta::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
