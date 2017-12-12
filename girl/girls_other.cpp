@@ -40,7 +40,7 @@ void Kazue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         for (int pos = 0; pos < 5; pos++) {
             const TileCount &closed = hand.closed();
                   for (T34 t : tiles34::ALL34) {
-                      if (closed.ct(t) == 2){
+                      if (closed.ct(t) >= 1){
                       T34 i = t.indicator();
          mount.power(Mount::URADORA, pos, i, 5000, false);
             }
