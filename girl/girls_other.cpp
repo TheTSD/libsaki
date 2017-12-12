@@ -42,7 +42,7 @@ void Kazue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
                   for (T34 t : tiles34::ALL34) {
                       if (closed.ct(t) == 2){
                       T34 i = t.indicator();
-                  int mk = t.suit() == i.suit() ? 5000 : -50;
+                  int mk = t == i ? 5000 : -50;
                 mount.power(Mount::URADORA, pos, i, mk, false);
             }
           }
