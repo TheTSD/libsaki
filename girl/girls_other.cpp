@@ -36,7 +36,7 @@ void Kazue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         accelerate(mount, table.getHand(who), table.getRiver(who), 600);
     }
 
-    if (table.riichiEstablished(mSelf) && table.getRound() >= 0){
+    if (table.riichiEstablished(mSelf) && table.getRound() >= 4){
         for (int pos = 0; pos < 5; pos++) {
             const TileCount &closed = hand.closed();
                   for (T34 t : tiles34::ALL34) {
