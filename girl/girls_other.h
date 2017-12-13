@@ -36,7 +36,11 @@ class Rio : public Girl
 {
 public:
     GIRL_CTORS(Rio)
+    void onDice(util::Rand &rand, const Table &table, Choices &choices) override;
+    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
+    int yakuman;
 
 };
 
