@@ -55,6 +55,36 @@ private:
 };
 
 
+class Arata : public Girl
+{
+public:
+    GIRL_CTORS(Arata)
+    void onDice(util::Rand &rand, const Table &table, Choices &choices) override;
+    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
+    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
+    void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+
+private:
+    int bowling = 0;
+};
+
+
+
+} // namespace saki
+
+
+
+#endif // SAKI_GIRLS_ACHIGA_H
+
+
+
+    static int sskDist(const TileCount &closed, T34 head);
+    static int ittDist(const TileCount &closed, T34 head);
+    static void oneDragTwo(Mount &mount, const TileCount &closed, T34 head);
+    static void thinFill(Mount &mount, const TileCount &closed, T34 heads);
+};
+
+
 
 } // namespace saki
 
