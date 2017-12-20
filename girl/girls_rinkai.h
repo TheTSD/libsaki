@@ -44,7 +44,27 @@ private:
 
 
 
+class Myeonghwa : public Girl
+{
+public:
+    GIRL_CTORS(Myeonghwa)
+
+    bool checkInit(const Table &table, Who who, const Hand &init, const Princess &princess, int iter) ;
+    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
+    void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+    void nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
+                   std::bitset<NUM_NM_SKILL> &presence,
+                   const Princess &princess) override;
+};
+
 }
+
+
+
+
+
+
+#endif // SAKI_GIRLS_RINKAI_H
 
 
 
